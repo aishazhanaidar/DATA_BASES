@@ -1,3 +1,4 @@
+create type sex as enum ('male', 'female');
 create table students(
     full_name    varchar(50) primary key,
     age          smallint,
