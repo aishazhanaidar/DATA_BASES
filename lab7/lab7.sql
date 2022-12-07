@@ -1,81 +1,87 @@
 --a
-create function increment(a numeric)
-    returns numeric as
+create function first(a numeric) returns numeric as
 $$
-begin
-    return a + 1;
-end;
-$$
-language plpgsql;
---b
-create function sum(a numeric, b numeric)
-    returns numeric as
-$$
-begin
-    return a + b;
-end;
-$$
-language plpgsql;
---c
-create function even(a int)
-    returns boolean as
-$$
-begin
-    if a % 2 = 0 then return true;
-    else return false;
-    end if;
-end;
-$$
-language plpgsql;
---d
-create function validity(s varchar)
-    returns boolean as
-$$
-begin
-    if LENGTH(s) > 7 then return true;
-    else return false;
-    end if;
-end;
-$$
-language plpgsql;
---e
-create function pow(a numeric, out square numeric, out cube numeric) as
-$$
-begin
-    square = a * a;
-    cube = square * a;
+begin return a + 1;
 end;
 $$
 language plpgsql;
 
+--select first(33);
+
+--b
+create function second(a numeric, b numeric) returns numeric as
+$$
+begin return a + b;
+end;
+$$
+language plpgsql;
+
+--select second(51, 6);
+
+--c
+create function third(a integer) returns boolean as
+$$
+begin return if a % 2 = 0
+end;
+$$
+language plpgsql;
+
+--select third(45);
+
+--d
+create function fourth(d varchar) returns boolean as
+$$
+begin return length(d) < 11;
+end;
+$$
+language plpgsql;
+
+--e
+create function fifth(a integer, out first integer, out second integer) as
+$$
+begin
+    first = a + 17;
+    second = a * 3;
+end;
+$$
+language plpgsql;
+
+--select fifth(4);
+
+-------------------------------------------------------------------------------------------------------------------------------------------
 
 --a
-create function current()
-    returns trigger as
+create function a() returns trigger as
 $$
 begin
-    raise notice '%',now();
+    raise notice '%', now();
     return new;
 end;
 $$
 language plpgsql;
 
-create trigger current_t before insert on table1 for each row execute procedure current();
+create trigger aa
+    before insert on table1 
+    for each row 
+    execute procedure a();
+
 --b
-create function age()
-    returns trigger as
+create function b() returns trigger as
 $$
 begin
-    raise notice '%', age(now(),new.t);
+    raise notice '%', b(now(),new.t);
     return new;
 end;
 $$
 language plpgsql;
 
-create trigger age_t before insert on table2 for each row execute procedure age();
+create trigger bb
+    before insert on table2
+    for each row
+    execute procedure b();
+
 --c
-create function tax()
-    returns trigger as
+create function c() returns trigger as
 $$
 begin
     new.cost = new.cost * 1.12;
@@ -84,40 +90,53 @@ end;
 $$
 language plpgsql;
 
-create trigger tax_t before insert on table3 for each row execute procedure tax();
+create trigger cc
+    before insert on table3
+    for each row
+    execute procedure c();
+
 --d
-create function stop()
-    returns trigger as
+create function d() returns trigger as
 $$
-begin
-    raise exception 'Deletion is not allowed';
+begin raise exception 'Deletion is not allowed';
 end;
 $$
 language plpgsql;
 
-create trigger stop_t before delete on table4 execute procedure stop();
+create trigger dd
+    before delete on table4
+    execute procedure d();
+
 --e
-create function call()
-    returns trigger as
+create function e() returns trigger as
 $$
 begin
-    raise notice '%', validity(new.s);
-    raise notice '%', pow(new.a);
+    raise notice '%', fourth(new.s);
+    raise notice '%', fifth(new.a);
     return new;
 end;
 $$
 language plpgsql;
 
-create trigger call_t before insert on table5 for each row execute procedure call();
+create trigger ee
+    before insert on table5
+    for each row
+    execute procedure e();
 
+---------------------------------------------------------------------------------------------------------------------------------------------
 
-create table work(id int, name varchar, date_of_birth date, age int, salary numeric, workexperience int, discount numeric);
+create table aaa(
+    id integer,
+    name varchar,
+    date_of_birth date,
+    age integer,
+    salary numeric,
+    discount numeric,
+    workexperience integer);
 --a
-create function
-    a(id int, name varchar, date_of_birth date, age int, inout salary numeric, workexperience int, out discount numeric) as
+create function a(id int, name varchar, date_of_birth date, age int, inout salary numeric, out discount numeric, workexperience int) as
 $$
-declare
-    count int;
+declare count int;
 begin
     discount = 10;
     count = workexperience/2;
@@ -128,18 +147,17 @@ begin
     for step in 1..count loop
         discount = discount * 1.01;
     end loop;
-    insert into work values(id, name, date_of_birth, age, salary, workexperience, discount);
+    insert into work values(id, name, date_of_birth, age, salary, discount, workexperience);
 end;
 $$
 language plpgsql;
 
-select * from a(1, 'a', '2000-03-02', 22, 1000, 10);
+--select * from a(190, 'Aisha', '2004-07-05', 22, 1000, 100);
+
 --b
-create or replace function
-    b(id int, name varchar, date_of_birth date, age int, inout salary numeric, workexperience int, out discount numeric) as
+create function b(id int, name varchar, date_of_birth date, age int, inout salary numeric, workexperience int, out discount numeric) as
 $$
-declare
-    count int;
+declare count int;
 begin
     if age >= 40 then salary = salary * 1.15;
     end if;
@@ -152,13 +170,13 @@ begin
     for step in 1..count loop
         discount = discount * 1.01;
     end loop;
-    if workexperience > 8 then salary = salary * 1.15;
-    end if;
     if workexperience > 8 then discount = 20;
+    end if;
+    if workexperience > 8 then salary = salary * 1.15;
     end if;
     insert into work values(id, name, date_of_birth, age, salary, workexperience, discount);
 end;
 $$
 language plpgsql;
 
-select * from b(2, 'b', '2000-03-02', 44, 1000, 10);
+--select * from b(212, 'Beka', '1999-09-11', 32, 890, 10);
